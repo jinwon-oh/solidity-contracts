@@ -1,0 +1,27 @@
+{
+  "name": "solidity-contracts",
+  "version": "0.0.1",
+  "description": "",
+  "main": " ",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jinwon-oh/solidity-contracts.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/jinwon-oh/solidity-contracts/issues"
+  },
+  "homepage": "https://github.com/jinwon-oh/solidity-contracts#readme",
+  "devDependencies": {
+    "@openzeppelin/contracts": "^5.0.0",
+    "@truffle/hdwallet-provider": "^2.1.15",
+    "dotenv": "^16.3.1",
+    "ganache": "^7.9.1",
+    "truffle": "^5.11.5",
+    "truffle-contract-size": "^2.0.1"
+  }
+}
