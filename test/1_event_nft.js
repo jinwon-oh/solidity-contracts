@@ -28,77 +28,89 @@ contract("EventNFT", function (accounts) {
 
   it("mint 1", async function () {
     const ins = await EventNFT.deployed();
-    const result = await ins.mint({
+    const result = await ins.mintTo(accounts[2], 1, {
       from: accounts[2],
       value: "1000000000000000000",
     });
-    console.log(result);
+    console.log(result.logs);
     return assert.isTrue(true);
   });
 
   it("mint 2", async function () {
     const ins = await EventNFT.deployed();
-    const result = await ins.mint({
+    const result = await ins.mintTo(accounts[2], 1, {
       from: accounts[2],
       value: "1000000000000000000",
     });
-    console.log(result);
+    console.log(result.logs);
     return assert.isTrue(true);
   });
 
   it("mint 3", async function () {
     const ins = await EventNFT.deployed();
-    const result = await ins.mint({
+    const result = await ins.mintTo(accounts[2], 1, {
       from: accounts[2],
       value: "1000000000000000000",
     });
-    console.log(result);
+    console.log(result.logs);
     return assert.isTrue(true);
   });
 
   it("mint 4", async function () {
     const ins = await EventNFT.deployed();
-    const result = await ins.mint({
+    const result = await ins.mintTo(accounts[2], 1, {
       from: accounts[2],
       value: "1000000000000000000",
     });
-    console.log(result);
+    console.log(result.logs);
     return assert.isTrue(true);
   });
 
   it("mint 5", async function () {
     const ins = await EventNFT.deployed();
-    const result = await ins.mint({
+    const result = await ins.mintTo(accounts[2], 1, {
       from: accounts[2],
       value: "1000000000000000000",
     });
-    console.log(result);
+    console.log(result.logs);
     return assert.isTrue(true);
   });
 
   it("mint 6", async function () {
     const ins = await EventNFT.deployed();
-    const result = await ins.mint({
+    const result = await ins.mintTo(accounts[2], 1, {
       from: accounts[2],
       value: "1000000000000000000",
     });
-    console.log(result);
+    console.log(result.logs);
     return assert.isTrue(true);
   });
 
   it("mint 7", async function () {
     const ins = await EventNFT.deployed();
-    const result = await ins.mint({
+    const result = await ins.mintTo(accounts[1], 1, {
+      from: accounts[1],
+      value: "1000000000000000000",
+    });
+    console.log(result.logs);
+    return assert.isTrue(true);
+  });
+
+  it("mint 8", async function () {
+    const ins = await EventNFT.deployed();
+    const result = await ins.mintTo(accounts[2], 1, {
       from: accounts[2],
       value: "1000000000000000000",
     });
-    console.log(result.logs[0].args);
+    console.log(result.logs);
     return assert.isTrue(true);
   });
 
   it("transfer", async function () {
     const ins = await EventNFT.deployed();
-    const result = await ins.transferFrom(accounts[2], accounts[1], 1);
+    const result = await ins.transferFrom(accounts[1], accounts[2], 7, {
+      from: accounts[1],
+    });
     console.log(result.logs[0].args);
     return assert.isTrue(true);
   });

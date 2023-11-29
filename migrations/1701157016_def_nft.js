@@ -1,16 +1,15 @@
-const EventNFT = artifacts.require("EventNFT");
+const DefNFT = artifacts.require("DefNFT");
 
 module.exports = async function (_deployer, network, accounts) {
   console.log("network:", network);
   console.log("accounts:", accounts);
   // Use deployer to state migration tasks.
   await _deployer.deploy(
-    EventNFT,
-    "TEST NFT",
-    "TNFT",
-    // accounts[0],
-    "https://sample.url/",
-    "https://sample.url/unrevealed/",
+    DefNFT,
+    "Default NFT",
+    "DNFT",
+    "https://exmple.io/",
+    "https://example.io/unrevealed/",
     "0x0000000000000000000000000000000000000000"
   );
 };

@@ -98,12 +98,11 @@ module.exports = {
     //   production: true    // Treats this network as if it was a public net. (default: false)
     // }
     elizabeth: {
-      provider: function () {
+      provider: () =>
         new HDWalletProvider({
           privateKeys: [PRIVATEKEY],
           providerOrUrl: "https://testnet-rpc.timenetwork.io",
-        });
-      },
+        }),
       // from: ADDRESS
       network_id: 2731, // This network is yours, in the cloud.
       production: true, // Treats this network as if it was a public net. (default: false)

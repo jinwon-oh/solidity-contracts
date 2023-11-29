@@ -2,9 +2,9 @@
 pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Burnable.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 /**
@@ -13,31 +13,40 @@ import "@openzeppelin/contracts/utils/Strings.sol";
 import "./Abstracts.sol";
 
 // contract MyToken is Pausable, Ownable, ERC721Burnable, ERC721Enumerable {
-contract EventNFT is ERC721, Ownable, ERC721Burnable, ERC721Enumerable {
+contract DefNFT is ERC721, Ownable, ERC721Burnable, ERC721Enumerable {
+    // bytes32 immutable public merkleRoot;
     bytes32 public merkleRoot;
 
     uint256 public cost = 1 ether;
-    uint256 public maxSupply = 1000;
+    uint256 public maxSupply;
     uint256 public _maxMintAmount = 5; // amount per session
-    uint256 public nftPerAddressLimit = 10; // limit per account
+    uint256 public nftPerAddressLimit = 5; // limit per account
     uint256 private _mintStartBlock;
-    uint256 private _mintEndBlock = 1801231078;
-    bool private onlyWhitelisted = false; // doesn't have view method
+    uint256 private _mintEndBlock;
+    bool private onlyWhitelisted = true; // doesn't have view method
     bool private _isRevealed = false;
-    bool private _allowExternalTrade = true;
+    bool private _allowExternalTrade = false;
     string private _preRevealURI = "https://example.org/pre-reveal.json";
     string private _postRevealBaseURI = "";
+    // uint256 constant private BIN_SIZE = 1000;
+    // uint256 private numBins = maxSupply / BIN_SIZE;
+
+    // // 전체 bin을 관리하는 mapping
+    // mapping(uint256 => uint256) private _bins;
 
     string public baseExtension = ".json";
 
     address public proxyRegistryAddress;
+    // address public editor;
+
+    // bytes32 private constant EDITOR_ROLE = keccak256("Edit");
 
     uint256 private _tokenIds;
     uint256 private _currentRound;
 
-    uint256 public volume = 7;
-
     mapping(uint256 => mapping(address => uint256)) public addressMintedBalance;
+
+    // mapping(uint256 => mapping(address => bool)) public claimed;
 
     constructor(
         string memory _name,
@@ -45,12 +54,64 @@ contract EventNFT is ERC721, Ownable, ERC721Burnable, ERC721Enumerable {
         string memory _initBaseURI,
         string memory _initNotRevealUri,
         address _proxyRegistryAddress
-    ) ERC721(_name, _symbol) Ownable(_msgSender()) {
+    )
+        // uint256 _maxSupply
+        // bytes32 _merkleRoot
+        ERC721(_name, _symbol)
+        Ownable(_msgSender())
+    {
+        // _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
+        // _setRoleAdmin(EDITOR_ROLE, DEFAULT_ADMIN_ROLE);
+        // _setupRole(EDITOR_ROLE, msg.sender);
+
         setBaseURI(_initBaseURI);
         setPreRevealedURI(_initNotRevealUri);
+        // setMaxSupply(_maxSupply);
+        // setMerkleRoot(_merkleRoot);
         _tokenIds = 1; // start from 1
         proxyRegistryAddress = _proxyRegistryAddress;
     }
+
+    // // constructor() ERC721("WEnFT Template", "WFTT") {}
+    // /// @dev Restricted to members of the admin role.
+    // modifier onlyAdmin() {
+    //     require(isAdmin(msg.sender), "admin only");
+    //     _;
+    // }
+    // /// @dev Restricted to members of the editor role.
+    // modifier onlyEditor() {
+    //     require(isEditor(msg.sender), "editor only");
+    //     _;
+    // }
+
+    // /// @dev Return `true` if the account belongs to the admin role.
+    // function isAdmin(address account) public view virtual returns (bool) {
+    //     return hasRole(DEFAULT_ADMIN_ROLE, account);
+    // }
+
+    // /// @dev Return `true` if the account belongs to the editor role.
+    // function isEditor(address account) public view virtual returns (bool) {
+    //     return hasRole(EDITOR_ROLE, account);
+    // }
+
+    // /// @dev Change an account of the admin role. Restricted to admins.
+    // function changeAdmin(address account) public virtual onlyAdmin {
+    //     require(account != msg.sender, "is admin");
+    //     require(account != 0x0000000000000000000000000000000000000000, "null account");
+    //     require(account != 0x000000000000000000000000000000000000dEaD, "null account");
+    //     grantRole(DEFAULT_ADMIN_ROLE, account);
+    //     renounceRole(DEFAULT_ADMIN_ROLE, msg.sender);
+    // }
+
+    // /// @dev Add an account to the editor role. Restricted to admins.
+    // function addEditor(address account) public virtual onlyAdmin {
+    //     grantRole(EDITOR_ROLE, account);
+    // }
+
+    // /// @dev Remove an account from the editor role. Restricted to admins.
+    // function removeEditor(address account) public virtual onlyAdmin {
+    //     revokeRole(EDITOR_ROLE, account);
+    // }
 
     event Revealed(string baseURI);
     event CostChanged(uint256 cost);
@@ -61,6 +122,23 @@ contract EventNFT is ERC721, Ownable, ERC721Burnable, ERC721Enumerable {
     event WhitelistStateChanged(bool state);
     event Withdraw(uint256 amount);
     event MerkelRootChanged();
+
+    // function pause() public onlyOwner {
+    //     _pause();
+    // }
+
+    // function unpause() public onlyOwner {
+    //     _unpause();
+    // }
+
+    // function setEditor(address _account) public onlyOwner {
+    //     editor = _account;
+    // }
+
+    // function setBaseURI(string memory _newBaseURI) public {
+    //     require(msg.sender == owner() || msg.sender == editor, "not allowed");
+    //     _postRevealBaseURI = _newBaseURI;
+    // }
 
     function setBaseURI(string memory _newBaseURI) public onlyOwner {
         _postRevealBaseURI = _newBaseURI;
@@ -109,6 +187,49 @@ contract EventNFT is ERC721, Ownable, ERC721Burnable, ERC721Enumerable {
         }
     }
 
+    // // generate random token id
+    // function transferTokens(address to, uint256 quantity) internal {
+    //     uint256 i;
+
+    //     for (i = 0; i < quantity; i++) {
+    //         uint256 binIndex = uint256(keccak256(abi.encodePacked(block.timestamp, block.difficulty, msg.sender, i))) % numBins;
+    //         // 사용 가능한 bin 선택
+    //         while (_bins[binIndex] == BIN_SIZE) {
+    //             binIndex = (binIndex + 1) % numBins;
+    //         }
+
+    //         // 랜덤 토큰 ID 발급
+    //         uint256 tokenId = binIndex * BIN_SIZE + _bins[binIndex] + 1;
+    //         _bins[binIndex]++;
+
+    //         _safeMint(to, tokenId);
+    //         _tokenIds.increment();
+
+    //         // binIndex 업데이트
+    //         if ((i + 1) % BIN_SIZE == 0) {
+    //             binIndex = (binIndex + 1) % numBins;
+    //         }
+    //     }
+    // }
+
+    // function mint(uint256 quantity) public payable {
+    //     require(onlyWhitelisted == false, "not public");
+    //     validateMintRequest(msg.sender, quantity);
+    //     transferTokens(msg.sender, quantity);
+    // }
+
+    // function whitelistMint(uint256 quantity, bytes32[] calldata merkleProof) public payable {
+    //     // require(claimed[_currentRound.current()][msg.sender] == false, "already claimed");
+    //     require(onlyWhitelisted == true, "not whitelist");
+    //     bytes32 node = keccak256(abi.encodePacked(msg.sender));
+    //     require(MerkleProof.verify(merkleProof, merkleRoot, node) == true, "user is not whitelisted");
+
+    //     validateMintRequest(msg.sender, quantity);
+    //     // claimed[_currentRound.current()][msg.sender] = true;
+
+    //     transferTokens(msg.sender, quantity);
+    // }
+
     function mintTo(address to, uint256 quantity) public payable {
         require(onlyWhitelisted == false, "not public");
         require(
@@ -124,6 +245,7 @@ contract EventNFT is ERC721, Ownable, ERC721Burnable, ERC721Enumerable {
         uint256 quantity,
         bytes32[] calldata merkleProof
     ) public payable {
+        // require(claimed[_currentRound.current()][to] == false, "already claimed");
         require(onlyWhitelisted == true, "not whitelist");
         require(
             msg.sender == to || msg.sender == owner(),
@@ -134,7 +256,10 @@ contract EventNFT is ERC721, Ownable, ERC721Burnable, ERC721Enumerable {
             MerkleProof.verify(merkleProof, merkleRoot, node) == true,
             "user is not whitelisted"
         );
+
         validateMintRequest(to, quantity);
+        // claimed[_currentRound.current()][to] = true;
+
         transferTokens(to, quantity);
     }
 
@@ -142,27 +267,12 @@ contract EventNFT is ERC721, Ownable, ERC721Burnable, ERC721Enumerable {
         _safeMint(to, tokenId);
     }
 
-    function setVolume(uint256 newVolume) public onlyOwner {
-        volume = newVolume;
-    }
-
-    function claim(address user, uint256[] calldata tokenIds) public onlyOwner {
-        require(tokenIds.length == volume, "invalid set of tokens");
-        require(isApprovedForAll(user, _msgSender()), "not alloweded");
-        uint256 index;
-        for (index = 0; index < tokenIds.length; index++) {
-            require(_ownerOf(tokenIds[index]) == user, "invalid token id");
-        }
-        for (index = 0; index < tokenIds.length; index++) {
-            super._burn(tokenIds[index]);
-        }
-    }
-
     function tokenURI(
         uint256 _tokenId
     ) public view override returns (string memory) {
         require(_ownerOf(_tokenId) != address(0), "nonexistent token");
 
+        // return super.tokenURI(_tokenId);
         string memory currentBaseURI = _isRevealed ? _baseURI() : _preRevealURI;
         return
             bytes(currentBaseURI).length > 0
@@ -203,6 +313,7 @@ contract EventNFT is ERC721, Ownable, ERC721Burnable, ERC721Enumerable {
 
     function setMaxSupply(uint256 newMaxSupply) public onlyOwner {
         maxSupply = newMaxSupply;
+        // numBins = maxSupply / BIN_SIZE;
         emit MaxSupplyChanged(maxSupply);
     }
 
@@ -267,7 +378,6 @@ contract EventNFT is ERC721, Ownable, ERC721Burnable, ERC721Enumerable {
         return _postRevealBaseURI;
     }
 
-    // trading restriction
     function setProxyRegistryAddress(
         address _proxyRegistryAddress
     ) public onlyOwner {
@@ -290,6 +400,19 @@ contract EventNFT is ERC721, Ownable, ERC721Burnable, ERC721Enumerable {
         );
         super.transferFrom(from, to, tokenId);
     }
+
+    // function safeTransferFrom(
+    //     address from,
+    //     address to,
+    //     uint256 tokenId
+    // ) public virtual override(ERC721, IERC721) {
+    //     require(
+    //         _allowExternalTrade == true ||
+    //             isApprovedForAll(from, msg.sender) == true,
+    //         "not allowed"
+    //     );
+    //     super.safeTransferFrom(from, to, tokenId);
+    // }
 
     function safeTransferFrom(
         address from,
