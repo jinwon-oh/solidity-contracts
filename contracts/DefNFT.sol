@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Burnable.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
@@ -19,14 +19,14 @@ contract DefNFT is ERC721, Ownable, ERC721Burnable, ERC721Enumerable {
 
     uint256 public cost = 1 ether;
     uint256 public maxSupply;
-    uint256 public _maxMintAmount = 5; // amount per session
-    uint256 public nftPerAddressLimit = 5; // limit per account
+    uint256 public _maxMintAmount; // amount per session
+    uint256 public nftPerAddressLimit; // limit per account
     uint256 private _mintStartBlock;
     uint256 private _mintEndBlock;
     bool private onlyWhitelisted = true; // doesn't have view method
     bool private _isRevealed = false;
     bool private _allowExternalTrade = false;
-    string private _preRevealURI = "https://example.org/pre-reveal.json";
+    string private _preRevealURI = "";
     string private _postRevealBaseURI = "";
     // uint256 constant private BIN_SIZE = 1000;
     // uint256 private numBins = maxSupply / BIN_SIZE;
@@ -58,7 +58,6 @@ contract DefNFT is ERC721, Ownable, ERC721Burnable, ERC721Enumerable {
         // uint256 _maxSupply
         // bytes32 _merkleRoot
         ERC721(_name, _symbol)
-        Ownable(_msgSender())
     {
         // _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
         // _setRoleAdmin(EDITOR_ROLE, DEFAULT_ADMIN_ROLE);
@@ -401,18 +400,18 @@ contract DefNFT is ERC721, Ownable, ERC721Burnable, ERC721Enumerable {
         super.transferFrom(from, to, tokenId);
     }
 
-    // function safeTransferFrom(
-    //     address from,
-    //     address to,
-    //     uint256 tokenId
-    // ) public virtual override(ERC721, IERC721) {
-    //     require(
-    //         _allowExternalTrade == true ||
-    //             isApprovedForAll(from, msg.sender) == true,
-    //         "not allowed"
-    //     );
-    //     super.safeTransferFrom(from, to, tokenId);
-    // }
+    function safeTransferFrom(
+        address from,
+        address to,
+        uint256 tokenId
+    ) public virtual override(ERC721, IERC721) {
+        require(
+            _allowExternalTrade == true ||
+                isApprovedForAll(from, msg.sender) == true,
+            "not allowed"
+        );
+        super.safeTransferFrom(from, to, tokenId);
+    }
 
     function safeTransferFrom(
         address from,
@@ -446,20 +445,29 @@ contract DefNFT is ERC721, Ownable, ERC721Burnable, ERC721Enumerable {
 
     // The following functions are overrides required by Solidity.
 
-    function _update(
+    function _beforeTokenTransfer(
+        address from,
         address to,
         uint256 tokenId,
-        address auth
-    ) internal override(ERC721, ERC721Enumerable) returns (address) {
-        return super._update(to, tokenId, auth);
+        uint256 batchSize
+    ) internal override(ERC721, ERC721Enumerable) {
+        super._beforeTokenTransfer(from, to, tokenId, batchSize);
     }
 
-    function _increaseBalance(
-        address account,
-        uint128 value
-    ) internal override(ERC721, ERC721Enumerable) {
-        super._increaseBalance(account, value);
-    }
+    // function _update(
+    //     address to,
+    //     uint256 tokenId,
+    //     address auth
+    // ) internal override(ERC721, ERC721Enumerable) returns (address) {
+    //     return super._update(to, tokenId, auth);
+    // }
+
+    // function _increaseBalance(
+    //     address account,
+    //     uint128 value
+    // ) internal override(ERC721, ERC721Enumerable) {
+    //     super._increaseBalance(account, value);
+    // }
 
     function supportsInterface(
         bytes4 interfaceId

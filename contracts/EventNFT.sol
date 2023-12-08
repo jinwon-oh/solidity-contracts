@@ -17,17 +17,16 @@ contract EventNFT is ERC721, Ownable, ERC721Burnable, ERC721Enumerable {
     bytes32 public merkleRoot;
 
     uint256 public cost = 1 ether;
-    uint256 public maxSupply = 1000;
-    uint256 public _maxMintAmount = 5; // amount per session
-    uint256 public nftPerAddressLimit = 10; // limit per account
+    uint256 public maxSupply;
+    uint256 public _maxMintAmount; // amount per session
+    uint256 public nftPerAddressLimit; // limit per account
     uint256 private _mintStartBlock;
-    uint256 private _mintEndBlock = 1801231078;
-    bool private onlyWhitelisted = false; // doesn't have view method
+    uint256 private _mintEndBlock;
+    bool private onlyWhitelisted = true; // doesn't have view method
     bool private _isRevealed = false;
     bool private _allowExternalTrade = true;
-    string private _preRevealURI = "https://example.org/pre-reveal.json";
-    string private _postRevealBaseURI = "";
-
+    string private _preRevealURI;
+    string private _postRevealBaseURI;
     string public baseExtension = ".json";
 
     address public proxyRegistryAddress;
@@ -45,7 +44,7 @@ contract EventNFT is ERC721, Ownable, ERC721Burnable, ERC721Enumerable {
         string memory _initBaseURI,
         string memory _initNotRevealUri,
         address _proxyRegistryAddress
-    ) ERC721(_name, _symbol) Ownable(_msgSender()) {
+    ) ERC721(_name, _symbol) {
         setBaseURI(_initBaseURI);
         setPreRevealedURI(_initNotRevealUri);
         _tokenIds = 1; // start from 1
@@ -146,15 +145,15 @@ contract EventNFT is ERC721, Ownable, ERC721Burnable, ERC721Enumerable {
         volume = newVolume;
     }
 
-    function claim(address user, uint256[] calldata tokenIds) public onlyOwner {
-        require(tokenIds.length == volume, "invalid set of tokens");
-        require(isApprovedForAll(user, _msgSender()), "not alloweded");
+    // Call by token owner only
+    function claim(uint256[] calldata tokenIds) public {
         uint256 index;
+        require(tokenIds.length == volume, "invalid set of tokens");
         for (index = 0; index < tokenIds.length; index++) {
-            require(_ownerOf(tokenIds[index]) == user, "invalid token id");
+            require(ownerOf(tokenIds[index]) == _msgSender());
         }
         for (index = 0; index < tokenIds.length; index++) {
-            super._burn(tokenIds[index]);
+            _burn(tokenIds[index]);
         }
     }
 
@@ -294,6 +293,19 @@ contract EventNFT is ERC721, Ownable, ERC721Burnable, ERC721Enumerable {
     function safeTransferFrom(
         address from,
         address to,
+        uint256 tokenId
+    ) public virtual override(ERC721, IERC721) {
+        require(
+            _allowExternalTrade == true ||
+                isApprovedForAll(from, msg.sender) == true,
+            "not allowed"
+        );
+        super.safeTransferFrom(from, to, tokenId);
+    }
+
+    function safeTransferFrom(
+        address from,
+        address to,
         uint256 tokenId,
         bytes memory data
     ) public virtual override(ERC721, IERC721) {
@@ -323,20 +335,29 @@ contract EventNFT is ERC721, Ownable, ERC721Burnable, ERC721Enumerable {
 
     // The following functions are overrides required by Solidity.
 
-    function _update(
+    function _beforeTokenTransfer(
+        address from,
         address to,
         uint256 tokenId,
-        address auth
-    ) internal override(ERC721, ERC721Enumerable) returns (address) {
-        return super._update(to, tokenId, auth);
+        uint256 batchSize
+    ) internal override(ERC721, ERC721Enumerable) {
+        super._beforeTokenTransfer(from, to, tokenId, batchSize);
     }
 
-    function _increaseBalance(
-        address account,
-        uint128 value
-    ) internal override(ERC721, ERC721Enumerable) {
-        super._increaseBalance(account, value);
-    }
+    // function _update(
+    //     address to,
+    //     uint256 tokenId,
+    //     address auth
+    // ) internal override(ERC721, ERC721Enumerable) returns (address) {
+    //     return super._update(to, tokenId, auth);
+    // }
+
+    // function _increaseBalance(
+    //     address account,
+    //     uint128 value
+    // ) internal override(ERC721, ERC721Enumerable) {
+    //     super._increaseBalance(account, value);
+    // }
 
     function supportsInterface(
         bytes4 interfaceId

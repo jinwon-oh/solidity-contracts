@@ -43,7 +43,7 @@
 
 require("dotenv").config();
 // const { MNEMONIC, PROJECT_ID } = process.env;
-const { PRIVATEKEY } = process.env;
+const { PRIVATEKEY, ADDRESS } = process.env;
 
 const HDWalletProvider = require("@truffle/hdwallet-provider");
 
@@ -99,13 +99,11 @@ module.exports = {
     // }
     elizabeth: {
       provider: () =>
-        new HDWalletProvider({
-          privateKeys: [PRIVATEKEY],
-          providerOrUrl: "https://testnet-rpc.timenetwork.io",
-        }),
-      // from: ADDRESS
+        new HDWalletProvider(PRIVATEKEY, "https://testnet-rpc.timenetwork.io"),
+      // from: ADDRESS,
       network_id: 2731, // This network is yours, in the cloud.
-      production: true, // Treats this network as if it was a public net. (default: false)
+      production: false, // Treats this network as if it was a public net. (default: false)
+      // gasLimit: "8000000",
     },
   },
 
