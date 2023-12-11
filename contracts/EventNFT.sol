@@ -60,7 +60,7 @@ contract EventNFT is ERC721, Ownable, ERC721Burnable, ERC721Enumerable {
     event WhitelistStateChanged(bool state);
     event Withdraw(uint256 amount);
     event MerkelRootChanged();
-    event NftClaim(address owner);
+    event NftClaim(address indexed owner);
 
     function setBaseURI(string memory _newBaseURI) public onlyOwner {
         _postRevealBaseURI = _newBaseURI;
