@@ -17,12 +17,12 @@ contract EventNFT is ERC721, Ownable, ERC721Burnable, ERC721Enumerable {
     bytes32 public merkleRoot;
 
     uint256 public cost = 1 ether;
-    uint256 public maxSupply;
-    uint256 public _maxMintAmount; // amount per session
-    uint256 public nftPerAddressLimit; // limit per account
+    uint256 public maxSupply = 100;
+    uint256 public _maxMintAmount = 1; // amount per session
+    uint256 public nftPerAddressLimit = 100; // limit per account
     uint256 private _mintStartBlock;
-    uint256 private _mintEndBlock;
-    bool private onlyWhitelisted = true; // doesn't have view method
+    uint256 private _mintEndBlock = 2000000000;
+    bool private onlyWhitelisted = false; // doesn't have view method
     bool private _isRevealed = false;
     bool private _allowExternalTrade = true;
     string private _preRevealURI;
@@ -60,6 +60,7 @@ contract EventNFT is ERC721, Ownable, ERC721Burnable, ERC721Enumerable {
     event WhitelistStateChanged(bool state);
     event Withdraw(uint256 amount);
     event MerkelRootChanged();
+    event NftClaim(address owner);
 
     function setBaseURI(string memory _newBaseURI) public onlyOwner {
         _postRevealBaseURI = _newBaseURI;
@@ -155,6 +156,8 @@ contract EventNFT is ERC721, Ownable, ERC721Burnable, ERC721Enumerable {
         for (index = 0; index < tokenIds.length; index++) {
             _burn(tokenIds[index]);
         }
+
+        emit NftClaim(_msgSender());
     }
 
     function tokenURI(

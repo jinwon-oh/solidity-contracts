@@ -126,9 +126,8 @@ contract("EventNFT", function (accounts) {
     const ins = await EventNFT.deployed();
     const total = await ins.totalSupply();
     const balance = await ins.balanceOf(accounts[2]);
-    assert.isTrue(
-      total.toNumber() === minted.length && balance.toNumber() === owned.length
-    );
+    assert.isTrue(total.toNumber() === minted.length);
+    assert.isTrue(balance.toNumber() === owned.length);
   });
 
   // it("set approval for all", async function () {
@@ -141,15 +140,13 @@ contract("EventNFT", function (accounts) {
 
   it("invalid claim", async function () {
     const ins = await EventNFT.deployed();
-    const result = await ins.claim(minted.slice(0, 7));
+    const result = await ins.claim(minted.slice(0, 7), { from: accounts[2] });
     assert.isTrue(!result.receipt.status);
   });
 
   it("claim", async function () {
     const ins = await EventNFT.deployed();
-    const result = await ins.claim(owned, {
-      from: accounts[2],
-    });
+    const result = await ins.claim(owned, { from: accounts[2] });
     assert.isTrue(result.receipt.status);
   });
 
@@ -157,6 +154,7 @@ contract("EventNFT", function (accounts) {
     const ins = await EventNFT.deployed();
     const total = await ins.totalSupply();
     const balance = await ins.balanceOf(accounts[2]);
-    assert.isTrue(total.toNumber() === 1 && balance.toNumber() === 0);
+    assert.isTrue(total.toNumber() === 1);
+    assert.isTrue(balance.toNumber() === 0);
   });
 });
