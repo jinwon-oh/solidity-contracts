@@ -16,14 +16,14 @@ import "./Abstracts.sol";
 contract EventNFT is ERC721, Ownable, ERC721Burnable, ERC721Enumerable {
     bytes32 public merkleRoot;
 
-    uint256 public cost = 1 ether;
-    uint256 public maxSupply = 100;
-    uint256 public _maxMintAmount = 1; // amount per session
-    uint256 public nftPerAddressLimit = 100; // limit per account
-    uint256 private _mintStartBlock;
-    uint256 private _mintEndBlock = 2000000000;
+    uint256 public cost = 3 ether;
+    uint256 public maxSupply = 365e9;
+    uint256 public _maxMintAmount = 3; // amount per session
+    uint256 public nftPerAddressLimit = 365; // limit per account
+    uint256 private _mintStartBlock = 1704963600;
+    uint256 private _mintEndBlock = 1710925200;
     bool private onlyWhitelisted = false; // doesn't have view method
-    bool private _isRevealed = false;
+    bool private _isRevealed = true;
     bool private _allowExternalTrade = true;
     string private _preRevealURI;
     string private _postRevealBaseURI;
@@ -60,7 +60,7 @@ contract EventNFT is ERC721, Ownable, ERC721Burnable, ERC721Enumerable {
     event WhitelistStateChanged(bool state);
     event Withdraw(uint256 amount);
     event MerkelRootChanged();
-    event NftClaim(address indexed owner);
+    event NftClaim(address indexed owner, uint256[] tokenIds);
 
     function setBaseURI(string memory _newBaseURI) public onlyOwner {
         _postRevealBaseURI = _newBaseURI;
@@ -157,7 +157,7 @@ contract EventNFT is ERC721, Ownable, ERC721Burnable, ERC721Enumerable {
             _burn(tokenIds[index]);
         }
 
-        emit NftClaim(_msgSender());
+        emit NftClaim(_msgSender(), tokenIds);
     }
 
     function tokenURI(
